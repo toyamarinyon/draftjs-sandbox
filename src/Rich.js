@@ -1,6 +1,14 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
-import {Editor, EditorState, RichUtils} from 'draft-js';
+import {Editor, EditorState, RichUtils, convertToRaw, DefaultDraftBlockRenderMap} from 'draft-js';
+import {stateToHTML} from 'draft-js-export-html';
+import Immutable from 'immutable';
+const blockRenderMap = Immutable.Map({
+  'section': {
+    element: 'section'
+  }
+});
+const extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(blockRenderMap);
 
 class RichEditorExample extends React.Component {
   constructor(props) {
@@ -42,6 +50,10 @@ class RichEditorExample extends React.Component {
       )
     );
   }
+  _onLogClick() {
+    const content = this.state.editorState.getCurrentContent();
+    console.log(convertToRaw(content));
+  }
 
   render() {
     const {editorState} = this.state;
@@ -58,6 +70,8 @@ class RichEditorExample extends React.Component {
 
     return (
       <div className="RichEditor-root">
+        <button onClick={this._onLogClick.bind(this)}>Log</button>
+
         <BlockStyleControls
           editorState={editorState}
           onToggle={this.toggleBlockType}
@@ -76,7 +90,7 @@ class RichEditorExample extends React.Component {
             placeholder="Tell a story..."
             ref="editor"
             spellCheck={true}
-          />
+          />
         </div>
       </div>
     );
@@ -96,6 +110,9 @@ const styleMap = {
 function getBlockStyle(block) {
   switch (block.getType()) {
     case 'blockquote': return 'RichEditor-blockquote';
+    case 'align-left': return 'align-left';
+    case 'align-center': return 'align-center';
+    case 'align-right': return 'align-right';
     default: return null;
   }
 }
@@ -134,6 +151,9 @@ const BLOCK_TYPES = [
   {label: 'UL', style: 'unordered-list-item'},
   {label: 'OL', style: 'ordered-list-item'},
   {label: 'Code Block', style: 'code-block'},
+  {label: 'Left', style: 'align-left'},
+  {label: 'Center', style: 'align-center'},
+  {label: 'Right', style: 'align-right'},
 ];
 
 const BlockStyleControls = (props) => {
